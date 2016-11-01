@@ -1,0 +1,164 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="konami-handler">
+  <template>
+    <style>
+      :host {
+        display: hidden;
+      }
+    </style>
+  </template>
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'konami-handler',
+
+        properties: {
+          target: {
+            type: Object,
+            value: function() {
+              return this;
+            }
+          },
+          konami: {
+            type: Object,
+            value: function() {
+              return [];
+            }
+          }
+        },
+        ready: function() {
+          window.addEventListener('keyup', this._handleKeyUp.bind(this));
+        },
+        _handleKeyUp: function(e) {
+          // Arrow top == 38
+          // Arrow down == 40
+          // Arrow left == 37
+          // Arrow right == 39
+          // A == 65
+          // B == 66
+          var code = e.keyCode;
+          var key = '';
+          switch (code) {
+            case 37:
+              key = 'left'
+              break;
+            case 38:
+              key = 'top'
+              break;
+            case 39:
+              key = 'right'
+              break;
+            case 40:
+              key = 'down'
+              break;
+            case 65:
+              key = 'a'
+              break;
+            case 66:
+              key = 'b'
+              break;
+          }
+
+          if (key === '') {
+            return;
+          }
+
+          console.log(key);
+          var index = this.konami.length;
+          switch (index) {
+            case 0:
+              if (key != 'top') {
+                this.set('konami', []);
+                return;
+              }
+              this.push('konami', key);
+              break;
+            case 1:
+              if (key != 'top') {
+                this.set('konami', []);
+                return;
+              }
+              this.push('konami', key);
+              break;
+            case 2:
+              if (key != 'down') {
+                this.set('konami', []);
+                return;
+              }
+              this.push('konami', key);
+              break;
+            case 3:
+              if (key != 'down') {
+                this.set('konami', []);
+                return;
+              }
+              this.push('konami', key);
+              break;
+            case 4:
+              if (key != 'left') {
+                this.set('konami', []);
+                return;
+              }
+              this.push('konami', key);
+              break;
+            case 5:
+              if (key != 'right') {
+                this.set('konami', []);
+                return;
+              }
+              this.push('konami', key);
+              break;
+            case 6:
+              if (key != 'left') {
+                this.set('konami', []);
+                return;
+              }
+              this.push('konami', key);
+              break;
+            case 7:
+              if (key != 'right') {
+                this.set('konami', []);
+                return;
+              }
+              this.push('konami', key);
+              break;
+            case 8:
+              if (key != 'b') {
+                this.set('konami', []);
+                return;
+              }
+              this.push('konami', key);
+              break;
+            case 9:
+              if (key != 'a') {
+                this.set('konami', []);
+                return;
+              }
+              this.push('konami', key);
+              break;
+            default:
+              this.set('konami', []);
+          }
+
+          if (this.konami.length === 10) {
+            this.fire('konami-code');
+            this.set('konami', []);
+          }
+        }
+      });
+    })();
+  </script>
+</dom-module>

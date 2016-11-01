@@ -14,6 +14,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tab.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../konami-handler/konami-handler.html">
 
 <dom-module id="the-graph">
   <template>
@@ -35,26 +42,108 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       paper-tabs {
         background: var(--primary-color);
-        width: 100%;
+        width: calc(100% - 200px);
         color: white;
+      }
+
+      .search {
+          background: var(--primary-color);
+          width: 200px;
+      }
+
+      #searchIcon {
+        color: white;
+        width: 50px;
+      }
+
+      #searchInput {
+        width: 100%;
+        height: 30px;
+        outline: none;
+        border: none;
+        border-radius: 5px;
+        padding: 3px;
+        margin-left: 10px;
+        font-size: 17px;
+      }
+
+      .list {
+        overflow-y: auto;
+        max-height: 300px;
+      }
+
+      paper-dropdown-menu {
+        margin: 0 10px 0 10px;
+      }
+
+      #dijkstraResults {
+        max-height: 150px;
+        overflow-y: auto;
       }
     </style>
 
-    <div class="vertical layout">
-      <paper-tabs scrollable id="menu">
-        <template is="dom-repeat" items="{{nodes}}" index-as="index">
-          <paper-tab on-click="_nodeListClick">{{item.data.label}}
-            <paper-icon-button icon="delete"></paper-icon-button>
-          </paper-tab>
-        </template>
-      </paper-tabs>
-      <div id="container">
+    <paper-dialog id="hiddenDialog" modal>
 
-      </div>
+        <h2>Hidden data</h2>
+          <h3>Dijkstra</h3>
+        <div class="horizontal center around-justified layout">
+          <paper-dropdown-menu label="Name 1" id="hiddenName1">
+            <paper-listbox class="dropdown-content">
+              <template is="dom-repeat" items="{{hiddenList}}" index-as="index">
+                  <paper-item>{{item.name}}</paper-item>
+              </template>
+  </paper-listbox>
+  </paper-dropdown-menu>
+  <paper-dropdown-menu label="Name 2" id="hiddenName2">
+    <paper-listbox class="dropdown-content">
+      <template is="dom-repeat" items="{{hiddenList}}" index-as="index">
+                  <paper-item>{{item.name}}</paper-item>
+              </template>
+    </paper-listbox>
+  </paper-dropdown-menu>
+  <!-- <paper-input label="Name 1" id="hiddenName1" required error-message="Required"></paper-input>
+          <paper-input label="Name 2" id="hiddenName2" required error-message="Required"></paper-input> -->
+  <paper-icon-button icon="search" on-click="_displayDijkstra"></paper-icon-button>
+  </div>
+  <div id="dijkstraResults">
+
+  </div>
+  <div>
+    <h3>List</h3>
+    <div class="list">
+      <template is="dom-repeat" items="{{hiddenList}}" index-as="index">
+              <div class="horizontal layout">
+                <b>{{item.degree}}</b> - {{item.name}}
+              </div>
+            </template>
     </div>
+  </div>
+  <div class="buttons">
+    <paper-button dialog-dismiss>Close</paper-button>
+  </div>
+  </paper-dialog>
+  <konami-handler on-konami-code="_displayHiddenData"></konami-handler>
+
+  <div class="vertical layout">
+    <div class="horizontal layout">
+      <div class="search horizontal center layout">
+        <input type="text" name="name" value="{{search::input}}" id="searchInput" placeholder="Search node">
+      </div>
+      <paper-tabs scrollable id="menu">
+        <template is="dom-repeat" items="{{nodes}}" index-as="index" filter="{{_filterList(search)}}">
+            <paper-tab on-click="_nodeListClick" data-node-id$="{{item.data.id}}">{{item.data.label}}
+              <paper-icon-button icon="delete" data-node-id$="{{item.data.id}}"></paper-icon-button>
+            </paper-tab>
+          </template>
+      </paper-tabs>
+    </div>
+    <div id="container">
+
+    </div>
+  </div>
   </template>
   <script src="../../bower_components/cytoscape/dist/cytoscape.min.js" charset="utf-8"></script>
-  <script src="http://46.101.2.83:5000/socket.io/socket.io.js" charset="utf-8"></script>
+  <script src="http://polycapa.fr:5000/socket.io/socket.io.js" charset="utf-8"></script>
   <script>
     (function() {
       'use strict';
@@ -95,6 +184,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           },
           draggedNode: {
             type: Object
+          },
+          search: {
+            type: String,
+            value: ''
+          },
+          hiddenList: {
+            type: Object,
+            value: function() {
+              return []
+            }
           }
         },
         _nodeClick: function(e) {
@@ -129,11 +228,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             target = target.parentNode;
           }
 
-          if (target.nodeName == 'PAPER-ICON-BUTTON') {
-            var node = this.nodes[e.model.index];
-            this.removeNode(node.data.id);
+          if (target.nodeName == 'PAPER-ICON-BUTTON' && target.getAttribute('data-node-id')) {
+            this.removeNode(target.getAttribute('data-node-id'));
           } else {
-            this.goToNode(this.nodes[this.$.menu.selected].data.id);
+            this.goToNode(target.getAttribute('data-node-id'));
           }
         },
         _backgroundClick: function(e) {
@@ -151,6 +249,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.cy.json(e);
           this.nodes = e.elements.nodes;
           this.edges = e.elements.edges;
+          this._centerWithoutAnimation();
         },
         _initGraph: function(e) {
           this.cy.json(e);
@@ -158,6 +257,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.nodes = e.elements.nodes;
             this.edges = e.elements.edges;
           }
+        },
+        _centerWithoutAnimation: function() {
+          this.cy.fit(this.cy.nodes(), 50);
+          this.$.menu.selected = null;
         },
         _deleteNodeClick: function(e) {
           e.preventDefault();
@@ -171,13 +274,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.dragInterval = null;
           }
           this.dragInterval = setInterval(function() {
-            e.cyTarget.json({selected: false})
+            e.cyTarget.json({
+              selected: false
+            })
             this.nodes = this.cy.json().elements.nodes;
             this.edges = this.cy.json().elements.edges;
             this.socketEmit('change-graph', this.cy.json());
 
             clearInterval(this.dragInterval);
           }.bind(this), 500);
+        },
+        _filterList: function(search) {
+          if (search == '') {
+            return null;
+          } else {
+            search = search.toLowerCase();
+            return function(item) {
+              var itemName = item.data.label.toLowerCase();
+              return (itemName.indexOf(search) > -1);
+            }
+          }
+        },
+        _displayHiddenData: function() {
+          this.set('hiddenList', this.getList());
+          this.$.hiddenDialog.open();
+        },
+        _displayDijkstra: function() {
+          var name1 = this.$.hiddenName1.selectedItemLabel;
+          var name2 = this.$.hiddenName2.selectedItemLabel;
+          var res = this.dijkstra(name1, name2);
+          this.$.dijkstraResults.innerHTML = res;
         },
         ready: function() {
           // Initialise graph
@@ -210,6 +336,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
 
           window.graph = this;
+          this.nodes = this.cy.json().elements.nodes;
 
           //Graph event
           this.cy.on('tap', 'node', this._nodeClick.bind(this));
@@ -219,7 +346,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           // Initialise socket
           if (io) {
-            this.socket = io('https://polycapa.me:3000');
+            this.socket = io('http://polycapa.fr:5000');
             this.socket.on('graph-changed', this._graphChanged.bind(this));
             this.socket.on('connected', this._initGraph.bind(this));
             this.socket.on('user-number', function(number) {
@@ -243,7 +370,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
 
           var nextId = 0;
-          if (this.nodes) {
+          if (this.nodes && this.nodes.length > 0) {
             var lastNodeId = this.nodes[this.nodes.length - 1].data.id;
             nextId = parseInt(lastNodeId.replace('n', '')) + 1;
           }
@@ -361,15 +488,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.cy.animate({
             fit: {
               eles: node,
-              padding: 280
+              padding: 300
             }
           });
         },
         center: function() {
           this.cy.animate({
             fit: {
-              center: true,
-              zoom: 0.6
+              eles: this.cy.nodes(),
+              padding: 50
             }
           });
           this.$.menu.selected = null;
@@ -384,25 +511,72 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.selectedNodes = [];
           this.selectedEdge = null;
         },
-        dijkstra: function (nomSource,nomTarget) {
-          var source = this.cy.$("[label='"+nomSource+"']")[0];
-          var target = this.cy.$("[label='"+nomTarget+"']")[0];
-          var dijkstra = this.cy.elements().dijkstra(source,function () {
+        dijkstra: function(nomSource, nomTarget) {
+          var source = this.cy.$("[label='" + nomSource + "']")[0];
+          var target = this.cy.$("[label='" + nomTarget + "']")[0];
+
+          if (!source || !target) {
+            return 'Error';
+          }
+          var dijkstra = this.cy.elements().dijkstra(source, function() {
             return 1;
           });
 
           var distanceTo = dijkstra.distanceTo(target);
           var pathTo = dijkstra.pathTo(target);
 
-          var path = 'Distance totale : ' + distanceTo + ' : ';
+          var path = '<b>Distance :</b> ' + distanceTo + ' <br>';
           for (var i = 0; i < pathTo.length; i++) {
             var data = pathTo[i].data();
             if (data.label) {
-              path += ' -> ' + data.label;
+              if (i > 0) {
+                path += '<b> -> </b>';
+              }
+              path += data.label + '</br>';
             }
           }
           console.log(path);
           return path;
+        },
+        getNamesWithMaxDegree: function() {
+          var nodes = this.cy.nodes();
+          var maxDegree = nodes.maxDegree(false);
+          var maxNodes = [];
+          for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            if (node.degree() === maxDegree) {
+              var name = node.data().label;
+              maxNodes.push(name)
+            }
+          }
+          return {
+            degree: maxDegree,
+            names: maxNodes
+          };
+        },
+        getList: function() {
+          var nodes = this.cy.nodes();
+          var maxDegree = nodes.maxDegree(false);
+          var list = [];
+          nodes = nodes.sort(function(a, b) {
+            if (a.degree() > b.degree()) {
+              return -1;
+            }
+            if (a.degree() < b.degree) {
+              return 1;
+            }
+            return 0;
+          });
+          for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            var name = node.data().label;
+            var degree = node.degree();
+            list.push({
+              degree: degree,
+              name: name
+            })
+          }
+          return list;
         }
       });
     })();

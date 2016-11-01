@@ -38,7 +38,8 @@ server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
-var io = require('socket.io').listen(server);
+var io = require('socket.io')
+    .listen(server);
 
 /**
  * Handle sockets
@@ -46,9 +47,11 @@ var io = require('socket.io').listen(server);
 
 var graph;
 var initGraph = false;
+var backupDir = './backup/';
+
 try {
     fs.accessSync('graph.json');
-    var contents = fs.readFileSync('graph.json', 'utf8');
+    var contents = fs.readFileSync(backupDir + 'graph.json', 'utf8');
     contents = JSON.parse(contents);
 
     graph = contents;
@@ -92,11 +95,11 @@ function saveGraph(graph) {
     var date = new Date();
     var string = date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear() + '-' + date.getHours() + '-' + date.getMinutes() + '-' + date.getSeconds();
     var oldFileName = 'graph' + '-' + string + '.json';
-    fs.rename('graph.json', oldFileName, function(err) {
+    fs.rename(backupDir + 'graph.json', backupDir + oldFileName, function(err) {
         if (err) {
             console.log('ERROR : ' + err);
         }
-        fs.writeFile('graph.json', JSON.stringify(graph), function(err) {
+        fs.writeFile(backupDir + 'graph.json', JSON.stringify(graph), function(err) {
             if (err) {
                 return console.log(err);
             }
