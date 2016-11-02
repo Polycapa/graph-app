@@ -213,6 +213,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             node.removeClass('selected');
           }
         },
+        _nodeRightClick: function(e) {
+          var node = e.cyTarget;
+          var hiddenEdges = this.cy.edges().difference(node.edges());
+          node.addClass('hidden');
+          // node.edges().addClass('selected');
+        },
         _edgeClick: function(e) {
           var edge = e.cyTarget;
           if (this.selectedEdge == edge) {
@@ -331,6 +337,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               style: {
                 'border-width': '5px',
                 'border-color': 'black'
+              }
+            }, {
+              selector: '.hidden',
+              style: {
+                'opacity': 0
               }
             }]
           });
@@ -452,7 +463,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           this.cy.add({
             group: 'edges',
-            data: edge
+            data: edge,
+            classes: 'hidden'
           });
 
           this.edges = this.cy.json().elements.edges;
@@ -510,6 +522,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
           this.selectedNodes = [];
           this.selectedEdge = null;
+          var edges = this.cy.edges();
+          edges.removeClass('hidden');
         },
         dijkstra: function(nomSource, nomTarget) {
           var source = this.cy.$("[label='" + nomSource + "']")[0];
