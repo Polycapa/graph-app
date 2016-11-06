@@ -42,6 +42,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     // imports are loaded and elements have been registered
   });
 
+  app.closeMenuAdd = function () {
+    app.$.menuAdd.close();
+  }
+
   app.addNode = function(e) {
     var node = e.detail.node;
     app.$.menuAdd.close();
@@ -51,7 +55,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   app.addEdge = function(e) {
     var detail = e.detail;
     app.$.menuAdd.close();
-    app.$.graph.addEdge(detail.source, detail.target, detail.color);
+    app.$.graph.addEdge(detail.source, detail.target, detail.color, detail.lineStyle);
     app.$.edgeAdd.hidden = true;
     app.$.nodeAdd.hidden = false;
   };

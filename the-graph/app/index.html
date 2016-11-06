@@ -75,11 +75,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <b>Delete node : </b> Click on trash icon in list
         </paper-tooltip>
         <paper-icon-button icon="all-out" on-click="centerGraph"></paper-icon-button>
-        <paper-menu-button horizontal-offset="-130" vertical-offset="20" id="menuAdd">
-          <paper-icon-button icon="add" class="dropdown-trigger"></paper-icon-button>
+        <paper-dialog id="menuAdd">
           <node-add on-add-node="addNode" class="dropdown-content" id="nodeAdd"></node-add>
           <edge-add on-add-edge="addEdge" class="dropdown-content" id="edgeAdd" hidden></edge-add>
-        </paper-menu-button>
+          <div id="menuClose">
+            <paper-button raised on-click="closeMenuAdd">Close</paper-button>
+          </div>
+
+        </paper-dialog>
       </paper-toolbar>
         <the-graph id="graph" on-request-add-node="openFormAddNode" on-request-add-edge="openFormAddEdge" on-user-number="updateUserNumber"></the-graph>
 
