@@ -50,7 +50,7 @@ var initGraph = false;
 var backupDir = './backup/';
 
 try {
-    fs.accessSync('graph.json');
+    fs.accessSync(backupDir + 'graph.json');
     var contents = fs.readFileSync(backupDir + 'graph.json', 'utf8');
     contents = JSON.parse(contents);
 
