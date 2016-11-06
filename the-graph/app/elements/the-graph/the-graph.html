@@ -143,7 +143,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </div>
   </template>
   <script src="../../bower_components/cytoscape/dist/cytoscape.min.js" charset="utf-8"></script>
-  <script src="http://polycapa.fr:5000/socket.io/socket.io.js" charset="utf-8"></script>
+  <script src="http://localhost:5000/socket.io/socket.io.js" charset="utf-8"></script>
+  <!-- <script src="http://polycapa.fr:5000/socket.io/socket.io.js" charset="utf-8"></script> -->
   <script>
     (function() {
       'use strict';
@@ -330,7 +331,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               selector: 'edge',
               style: {
                 'width': 3,
-                'line-color': 'data(color)'
+                'line-color': 'data(color)',
+                'line-style': 'data(lineStyle)'
               }
             }, {
               selector: '.selected',
@@ -357,7 +359,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           // Initialise socket
           if (io) {
-            this.socket = io('http://polycapa.fr:5000');
+            // this.socket = io('http://polycapa.fr:5000');
+            this.socket = io('http://localhost:5000');
             this.socket.on('graph-changed', this._graphChanged.bind(this));
             this.socket.on('connected', this._initGraph.bind(this));
             this.socket.on('user-number', function(number) {
@@ -438,7 +441,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.socketEmit('change-graph', this.cy.json());
           }
         },
-        addEdge: function(source, target, color, emit) {
+        addEdge: function(source, target, color, lineStyle, emit) {
 
           this.reset();
           color = color || '#ad1a66';
@@ -458,13 +461,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             id: edgeId,
             source: source,
             target: target,
-            color: color
+            color: color,
+            lineStyle: lineStyle
           };
+
+          console.log(edge);
 
           this.cy.add({
             group: 'edges',
             data: edge,
-            classes: 'hidden'
+            classes: 'hidden',
+            style: {
+              'line-style': lineStyle
+            }
           });
 
           this.edges = this.cy.json().elements.edges;
