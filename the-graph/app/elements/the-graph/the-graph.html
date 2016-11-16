@@ -76,7 +76,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin: 0 10px 0 10px;
       }
 
-      #dijkstraResults {
+      #dijkstraResults, #dijkstraToAllResults {
         max-height: 150px;
         overflow-y: auto;
       }
@@ -108,6 +108,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <div id="dijkstraResults">
 
   </div>
+    <h3>Dijkstra (tous les chemins)</h3>
+    <div class="horizontal center layout">
+
+      <paper-dropdown-menu label="Name" id="hiddenName">
+        <paper-listbox class="dropdown-content">
+          <template is="dom-repeat" items="{{hiddenList}}" index-as="index">
+              <paper-item>{{item.name}}</paper-item>
+          </template>
+  </paper-listbox>
+  </paper-dropdown-menu>
+    <paper-icon-button icon="search" on-click="_displayDijkstraToAll"></paper-icon-button>
+
+      <div id="dijkstraToAllResults">
+
+      </div>
+    </div>
+
   <div>
     <h3>List</h3>
     <div class="list">
@@ -143,8 +160,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </div>
   </template>
   <script src="../../bower_components/cytoscape/dist/cytoscape.min.js" charset="utf-8"></script>
-  <script src="http://localhost:5000/socket.io/socket.io.js" charset="utf-8"></script>
-  <!-- <script src="http://polycapa.fr:5000/socket.io/socket.io.js" charset="utf-8"></script> -->
+  <!-- <script src="http://localhost:5000/socket.io/socket.io.js" charset="utf-8"></script> -->
+  <script src="http://polycapa.fr:5000/socket.io/socket.io.js" charset="utf-8"></script>
   <script>
     (function() {
       'use strict';
@@ -312,6 +329,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var res = this.dijkstra(name1, name2);
           this.$.dijkstraResults.innerHTML = res;
         },
+        _displayDijkstraToAll: function() {
+          var name = this.$.hiddenName.selectedItemLabel;
+          if (!name) {
+            this.$.dijkstraToAllResults.innerHTML = 'Error';
+            return;
+          }
+          var res = this.dijkstraToAll(name);
+          this.$.dijkstraToAllResults.innerHTML = res;
+        },
         ready: function() {
           // Initialise graph
           this.cy = cytoscape({
@@ -359,8 +385,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           // Initialise socket
           if (io) {
-            // this.socket = io('http://polycapa.fr:5000');
-            this.socket = io('http://localhost:5000');
+            this.socket = io('http://polycapa.fr:5000');
+            // this.socket = io('http://localhost:5000');
             this.socket.on('graph-changed', this._graphChanged.bind(this));
             this.socket.on('connected', this._initGraph.bind(this));
             this.socket.on('user-number', function(number) {
@@ -465,8 +491,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             lineStyle: lineStyle
           };
 
-          console.log(edge);
-
           this.cy.add({
             group: 'edges',
             data: edge,
@@ -548,7 +572,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var distanceTo = dijkstra.distanceTo(target);
           var pathTo = dijkstra.pathTo(target);
 
-          var path = '<b>Distance :</b> ' + distanceTo + ' <br>';
+          var path = '<b>Distance to <i>' + nomTarget + ' </i> :</b> ' + distanceTo + ' <br>';
           for (var i = 0; i < pathTo.length; i++) {
             var data = pathTo[i].data();
             if (data.label) {
@@ -558,8 +582,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               path += data.label + '</br>';
             }
           }
+          path += '</br>';
           console.log(path);
           return path;
+        },
+        dijkstraToAll: function (nomSource) {
+          var list = this.getList();
+
+          var paths = '';
+
+          for (var i = 0; i < list.length; i++) {
+            var item = list[i];
+            if (item.name != nomSource) {
+              paths += this.dijkstra(nomSource, item.name);
+            }
+          }
+
+          return paths;
         },
         getNamesWithMaxDegree: function() {
           var nodes = this.cy.nodes();
