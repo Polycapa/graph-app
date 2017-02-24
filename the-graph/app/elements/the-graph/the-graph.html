@@ -158,8 +158,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </div>
   </template>
   <script src="../../bower_components/cytoscape/dist/cytoscape.min.js" charset="utf-8"></script>
-  <!-- <script src="http://localhost:5000/socket.io/socket.io.js" charset="utf-8"></script> -->
-  <script src="http://polycapa.fr:5000/socket.io/socket.io.js" charset="utf-8"></script>
+  <script src="http://localhost:5000/socket.io/socket.io.js" charset="utf-8"></script>
   <script>
     (function () {
       'use strict';
@@ -487,8 +486,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           // Initialise socket
           if (io) {
-            this.socket = io('http://polycapa.fr:5000');
-            // this.socket = io('http://localhost:5000');
+            this.socket = io('http://localhost:5000');
             this.socket.on('graph-changed', this._graphChanged.bind(this));
             this.socket.on('connected', this._initGraph.bind(this));
             this.socket.on('user-number', function (number) {
