@@ -7,7 +7,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 
-(function(document) {
+(function (document) {
   'use strict';
 
   // Grab a reference to our auto-binding template
@@ -24,7 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     // app.baseUrl = '/polymer-starter-kit/';
   }
 
-  app.displayInstalledToast = function() {
+  app.displayInstalledToast = function () {
     // Check to make sure caching is actually enabled—it won't be in the dev environment.
     if (!Polymer.dom(document).querySelector('platinum-sw-cache').disabled) {
       Polymer.dom(document).querySelector('#caching-complete').show();
@@ -33,12 +33,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   // Listen for template bound event to know when bindings
   // have resolved and content has been stamped to the page
-  app.addEventListener('dom-change', function() {
+  app.addEventListener('dom-change', function () {
     console.log('Our app is ready to rock!');
   });
 
   // See https://github.com/Polymer/polymer/issues/1381
-  window.addEventListener('WebComponentsReady', function() {
+  window.addEventListener('WebComponentsReady', function () {
     // imports are loaded and elements have been registered
   });
 
@@ -46,13 +46,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     app.$.menuAdd.close();
   }
 
-  app.addNode = function(e) {
+  app.addNode = function (e) {
     var node = e.detail.node;
     app.$.menuAdd.close();
     app.$.graph.addNode(node.x, node.y, node.label, node.color);
   };
 
-  app.addEdge = function(e) {
+  app.addEdge = function (e) {
     var detail = e.detail;
     app.$.menuAdd.close();
     app.$.graph.addEdge(detail.source, detail.target, detail.color, detail.lineStyle);
@@ -60,7 +60,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     app.$.nodeAdd.hidden = false;
   };
 
-  app.openFormAddNode = function(e) {
+  app.openFormAddNode = function (e) {
     var position = e.detail.position;
     app.$.nodeAdd.addData(position);
     app.$.edgeAdd.hidden = true;
@@ -68,7 +68,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     app.$.menuAdd.open();
   };
 
-  app.openFormAddEdge = function(e) {
+  app.openFormAddEdge = function (e) {
     var source = e.detail.source;
     var target = e.detail.target;
     app.$.edgeAdd.addData(source, target);
@@ -77,12 +77,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     app.$.menuAdd.open();
   };
 
-  app.centerGraph = function() {
+  app.centerGraph = function () {
     app.$.graph.center();
   }
 
   app.updateUserNumber = function (e) {
     app.users = e.detail.number;
   }
+
+  app.changeLayout = function (e) {
+    var node = e.detail.node;
+    app.$.graph.concentricLayout();
+  };
 
 })(document);

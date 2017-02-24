@@ -110,7 +110,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div>
           <h3>List</h3>
           <div class="list">
-            <template is="dom-repeat" items="{{hiddenList}}" index-as="index">
+            <template is="dom-repeat" items="{{hiddenOrderedList}}" index-as="index">
               <div class="horizontal layout">
                 <b>{{item.degree}}</b> - {{item.name}}
               </div>
@@ -206,6 +206,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: ''
           },
           hiddenList: {
+            type: Object,
+            value: function () {
+              return []
+            }
+          },
+          hiddenOrderedList: {
             type: Object,
             value: function () {
               return []
@@ -319,7 +325,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         },
         _displayHiddenData: function () {
-          this.set('hiddenList', this.getList());
+          this.set('hiddenList', this.getAlphabeticList());
+          this.set('hiddenOrderedList', this.getList());
           this.$.hiddenDialog.open();
         },
         _displayDijkstra: function () {
@@ -336,6 +343,102 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
           var res = this.dijkstraToAll(name);
           this.$.dijkstraToAllResults.innerHTML = res;
+        },
+        concentricLayout: function () {
+          var options = {
+            name: 'concentric',
+
+            fit: true, // whether to fit the viewport to the graph
+            padding: 30, // the padding on fit
+            startAngle: 3 / 2 * Math.PI, // where nodes start in radians
+            sweep: undefined, // how many radians should be between the first and last node (defaults to full circle)
+            clockwise: true, // whether the layout should go clockwise (true) or counterclockwise/anticlockwise (false)
+            equidistant: false, // whether levels have an equal radial distance betwen them, may cause bounding box overflow
+            minNodeSpacing: 10, // min spacing between outside of nodes (used for radius adjustment)
+            boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+            avoidOverlap: true, // prevents node overlap, may overflow boundingBox if not enough space
+            height: undefined, // height of layout area (overrides container height)
+            width: undefined, // width of layout area (overrides container width)
+            concentric: function (node) { // returns numeric value for each node, placing higher nodes in levels towards the centre
+              return node.degree();
+            },
+            levelWidth: function (nodes) { // the variation of concentric values in each level
+              return nodes.maxDegree() / 4;
+            },
+            animate: false, // whether to transition the node positions
+            animationDuration: 500, // duration of animation in ms if enabled
+            animationEasing: undefined, // easing of animation if enabled
+            ready: undefined, // callback on layoutready
+            stop: undefined // callback on layoutstop
+          };
+          this.cy.layout(options);
+        },
+        _gridLayout: function () {
+          var options = {
+            name: 'grid',
+
+            fit: true, // whether to fit the viewport to the graph
+            padding: 30, // padding used on fit
+            boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+            avoidOverlap: true, // prevents node overlap, may overflow boundingBox if not enough space
+            avoidOverlapPadding: 10, // extra spacing around nodes when avoidOverlap: true
+            condense: false, // uses all available space on false, uses minimal space on true
+            rows: undefined, // force num of rows in the grid
+            cols: undefined, // force num of columns in the grid
+            position: function (node) {}, // returns { row, col } for element
+            sort: undefined, // a sorting function to order the nodes; e.g. function(a, b){ return a.data('weight') - b.data('weight') }
+            animate: false, // whether to transition the node positions
+            animationDuration: 500, // duration of animation in ms if enabled
+            animationEasing: undefined, // easing of animation if enabled
+            ready: undefined, // callback on layoutready
+            stop: undefined // callback on layoutstop
+          };
+
+          this.cy.layout(options);
+        },
+        _circleLayout: function () {
+          var options = {
+            name: 'circle',
+
+            fit: true, // whether to fit the viewport to the graph
+            padding: 30, // the padding on fit
+            boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+            avoidOverlap: true, // prevents node overlap, may overflow boundingBox and radius if not enough space
+            radius: undefined, // the radius of the circle
+            startAngle: 3 / 2 * Math.PI, // where nodes start in radians
+            sweep: undefined, // how many radians should be between the first and last node (defaults to full circle)
+            clockwise: true, // whether the layout should go clockwise (true) or counterclockwise/anticlockwise (false)
+            sort: undefined, // a sorting function to order the nodes; e.g. function(a, b){ return a.data('weight') - b.data('weight') }
+            animate: false, // whether to transition the node positions
+            animationDuration: 500, // duration of animation in ms if enabled
+            animationEasing: undefined, // easing of animation if enabled
+            ready: undefined, // callback on layoutready
+            stop: undefined // callback on layoutstop
+          };
+
+          this.cy.layout(options);
+        },
+        _breadthfirstLayout: function () {
+          var options = {
+            name: 'breadthfirst',
+
+            fit: true, // whether to fit the viewport to the graph
+            directed: false, // whether the tree is directed downwards (or edges can point in any direction if false)
+            padding: 30, // padding on fit
+            circle: false, // put depths in concentric circles if true, put depths top down if false
+            spacingFactor: 1.75, // positive spacing factor, larger => more space between nodes (N.B. n/a if causes overlap)
+            boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+            avoidOverlap: true, // prevents node overlap, may overflow boundingBox if not enough space
+            roots: undefined, // the roots of the trees
+            maximalAdjustments: 0, // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+            animate: false, // whether to transition the node positions
+            animationDuration: 500, // duration of animation in ms if enabled
+            animationEasing: undefined, // easing of animation if enabled
+            ready: undefined, // callback on layoutready
+            stop: undefined // callback on layoutstop
+          };
+
+          this.cy.layout(options);
         },
         ready: function () {
           // Initialise graph
@@ -380,7 +483,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.cy.on('tap', 'node', this._nodeClick.bind(this));
           this.cy.on('tap', 'edge', this._edgeClick.bind(this));
           this.cy.on('cxttap', this._backgroundClick.bind(this));
-          this.cy.on('drag', 'node', this._nodeDrag.bind(this))
+          this.cy.on('drag', 'node', this._nodeDrag.bind(this));
 
           // Initialise socket
           if (io) {
@@ -595,7 +698,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return path;
         },
         dijkstraToAll: function (nomSource) {
-          var list = this.getList();
+          var list = this.getAlphabeticList();
 
           var paths = '';
 
@@ -632,7 +735,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             if (a.degree() > b.degree()) {
               return -1;
             }
-            if (a.degree() < b.degree) {
+            if (a.degree() < b.degree()) {
+              return 1;
+            }
+            return 0;
+          });
+          for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            var name = node.data().label;
+            var degree = node.degree();
+            list.push({
+              degree: degree,
+              name: name
+            })
+          }
+          return list;
+        },
+        getAlphabeticList: function () {
+          var nodes = this.cy.nodes();
+          var maxDegree = nodes.maxDegree(false);
+          var list = [];
+          nodes = nodes.sort(function (a, b) {
+            if (a.data().label < b.data().label) {
+              return -1;
+            }
+            if (a.data().label > b.data().label) {
               return 1;
             }
             return 0;
